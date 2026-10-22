@@ -24,7 +24,7 @@ jobs:
 
       - name: Add bucket
         shell: pwsh
-        run: scoop bucket add scoop-bucket "${{ github.workspace }}"
+        run: scoop bucket add scoop-bucket "${{ github.workspace }}\.git"
 
       - name: Checkver update
         shell: pwsh
