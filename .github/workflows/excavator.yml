@@ -26,9 +26,11 @@ jobs:
         shell: pwsh
         run: |
           $dir = "${{ github.workspace }}\bucket"
+          $checkver = "$env:USERPROFILE\scoop\apps\scoop\current\bin\checkver.ps1"
           foreach ($f in (Get-ChildItem "$dir\*.json")) {
+            $name = [System.IO.Path]::GetFileNameWithoutExtension($f.Name)
             Write-Host "-- $($f.Name)"
-            $out = & scoop checkver $f.Name -u -dir $dir 2>&1 | Out-String
+            $out = & $checkver $name -u -dir $dir 2>&1 | Out-String
             Write-Host $out
           }
 
