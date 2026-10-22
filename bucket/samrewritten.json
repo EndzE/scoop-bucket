@@ -2,7 +2,7 @@
     "version": "1.6.2",
     "description": "Modern Steam achievements manager for Windows and Linux",
     "homepage": "https://github.com/PaulCombal/SamRewritten",
-    "license": "GPL-3.0",
+    "license": "GPL-3.0-or-later",
     "architecture": {
         "64bit": {
             "url": "https://github.com/PaulCombal/SamRewritten/releases/download/v1.6.2/SamRewritten-windows-x86_64.zip",
