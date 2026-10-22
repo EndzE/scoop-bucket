@@ -1,0 +1,29 @@
+{
+    "version": "1.6.2",
+    "description": "Modern Steam achievements manager for Windows and Linux",
+    "homepage": "https://github.com/PaulCombal/SamRewritten",
+    "license": "GPL-3.0",
+    "architecture": {
+        "64bit": {
+            "url": "https://github.com/PaulCombal/SamRewritten/releases/download/v1.6.2/SamRewritten-windows-x86_64.zip",
+            "hash": "sha256:DBA79802C5BC5925AC271B4700E936B5740947D06DC5EAC12DBDB14ACAA0EDB2"
+        }
+    },
+    "extract_dir": "SamRewritten-windows-x86_64",
+    "shortcuts": [
+        [
+            "SamRewritten.exe",
+            "SamRewritten"
+        ]
+    ],
+    "checkver": {
+        "github": "https://github.com/PaulCombal/SamRewritten"
+    },
+    "autoupdate": {
+        "architecture": {
+            "64bit": {
+                "url": "https://github.com/PaulCombal/SamRewritten/releases/download/v$version/SamRewritten-windows-x86_64.zip"
+            }
+        }
+    }
+}

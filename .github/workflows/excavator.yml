@@ -1,0 +1,87 @@
+name: Excavator
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 */6 * * *'
+
+permissions:
+  contents: write
+
+jobs:
+  excavate:
+    name: Excavate
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Scoop
+        shell: pwsh
+        run: |
+          irm get.scoop.sh -outfile 'install.ps1'
+          .\install.ps1 -RunAsAdmin
+          Add-Content "$env:GITHUB_PATH" "$env:USERPROFILE\scoop\shims"
+
+      - name: Add bucket
+        shell: pwsh
+        run: scoop bucket add scoop-bucket "${{ github.workspace }}"
+
+      - name: Checkver update
+        shell: pwsh
+        run: |
+          $dir = "${{ github.workspace }}\bucket"
+          foreach ($f in (Get-ChildItem "$dir\*.json")) {
+            Write-Host "-- $($f.Name)"
+            $out = & scoop checkver $f.Name -u -dir $dir 2>&1 | Out-String
+            Write-Host $out
+          }
+
+      - name: Fill hashes for changed manifests
+        shell: pwsh
+        run: |
+          $changed = @(git diff --name-only -- bucket/)
+          if ($changed.Count -eq 0) { Write-Host 'No version changes.'; exit 0 }
+          foreach ($rel in $changed) {
+            $path = Join-Path "${{ github.workspace }}" $rel
+            $m = Get-Content $path -Raw | ConvertFrom-Json
+            $url = $m.url
+            if (-not $url) { $url = $m.architecture.'64bit'.url }
+            if (-not $url) { Write-Warning "No URL found in $rel"; continue }
+            if ($url -notmatch 'github\.com/([^/]+)/([^/]+)/releases/download/([^/]+)/([^/]+)$') {
+              Write-Warning "Unsupported URL for $rel : $url"; continue
+            }
+            $owner = $Matches[1]; $repo = $Matches[2]
+            $tag = [uri]::UnescapeDataString($Matches[3])
+            $assetName = [uri]::UnescapeDataString($Matches[4])
+            $headers = @{ 'User-Agent' = 'scoop-bucket-excavator'; 'Authorization' = "Bearer $env:GITHUB_TOKEN" }
+            $release = Invoke-RestMethod -Uri "https://api.github.com/repos/$owner/$repo/releases/tags/$tag" -Headers $headers
+            $asset = $release.assets | Where-Object name -eq $assetName
+            if (-not $asset) { Write-Warning "Asset $assetName not found in $tag"; continue }
+            $hash = $asset.digest
+            if (-not $hash -or -not $hash.StartsWith('sha256:')) {
+              Write-Host "No digest in API, downloading $assetName ..."
+              $tmp = New-TemporaryFile
+              Invoke-WebRequest -Uri $asset.browser_download_url -OutFile $tmp -Headers $headers
+              $hash = "sha256:$((Get-FileHash $tmp.FullName -Algorithm SHA256).Hash.ToLower())"
+              Remove-Item $tmp.FullName
+            }
+            $content = Get-Content $path -Raw
+            $pattern = '("hash"\s*:\s*)"[^"]*"'
+            $new = [System.Text.RegularExpressions.Regex]::new($pattern).Replace($content, ('$1"' + $hash + '"'), 1)
+            Set-Content $path $new -Encoding utf8 -NoNewline
+            Write-Host "$assetName -> $hash"
+          }
+
+      - name: Commit and push
+        shell: pwsh
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add bucket/
+          git diff --cached --quiet
+          if ($LASTEXITCODE -ne 0) {
+            git commit -m 'Excavator: auto-update manifests'
+            git push
+          } else {
+            Write-Host 'Nothing to commit.'
+          }
