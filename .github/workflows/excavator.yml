@@ -22,10 +22,6 @@ jobs:
           .\install.ps1 -RunAsAdmin
           Add-Content "$env:GITHUB_PATH" "$env:USERPROFILE\scoop\shims"
 
-      - name: Add bucket
-        shell: pwsh
-        run: scoop bucket add scoop-bucket "${{ github.workspace }}\.git"
-
       - name: Checkver update
         shell: pwsh
         run: |
