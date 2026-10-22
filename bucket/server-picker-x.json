@@ -1,10 +1,10 @@
 {
-    "version": "1.2.0",
+    "version": "1.1.0",
     "description": "CS2 server picker GUI to whitelist or block game servers through Windows Firewall (successor of cs2-server-picker)",
     "homepage": "https://github.com/FN-FAL113/server-picker-x",
     "license": "GPL-3.0-or-later",
-    "url": "https://github.com/FN-FAL113/server-picker-x/releases/download/v1.2.0/ServerPickerX.zip",
-    "hash": "sha256:E091C1A9F1108648BB64536165B69426D4737E20268177E7C659965E7E5E3A2E",
+    "url": "https://github.com/FN-FAL113/server-picker-x/releases/download/v1.1.0/ServerPickerX.zip",
+    "hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
     "pre_install": [
         "if (!(Test-Path \"$dir\\settings.json\")) { Set-Content -Path \"$dir\\settings.json\" -Value '{}' -Encoding utf8 }"
     ],
