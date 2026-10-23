@@ -1,0 +1,75 @@
+{
+    "version": "1.18.8",
+    "description": "An enhanced edition of Sandboxie that provides sandbox-based application isolation on Windows with additional features and a modern interface.",
+    "homepage": "https://sandboxie-plus.com",
+    "license": {
+        "identifier": "Freeware",
+        "url": "https://github.com/sandboxie-plus/Sandboxie/blob/HEAD/LICENSE.Plus"
+    },
+    "notes": [
+        "Portable-mode install (/portable=1): unlike the official Nonportable bucket's sandboxie-plus-np, no driver/service is pre-registered and no admin rights are needed.",
+        "On first SandMan.exe launch it will ask (elevated) to install/start the SbieDrv/SbieSvc driver - normal for portable mode.",
+        "If sandboxes were used, uninstalling without admin may leave SbieSvc/SbieDrv behind; run KmdUtil uninstall with elevation in that case.",
+        "Sandboxie.ini and related settings are persisted across updates (the installer never overwrites existing ini files).",
+        "For command-line usage, see: https://sandboxie-plus.com/sandboxie/startcommandline/. Please note that `sandboxie-start` should be used instead of the `start` command mentioned in the documentation."
+    ],
+    "architecture": {
+        "64bit": {
+            "url": "https://github.com/sandboxie-plus/Sandboxie/releases/download/v1.18.8/Sandboxie-Plus-x64-v1.18.8.exe",
+            "hash": "f27078ff74a07906fd51476079e1a7a8f5e20c8bb75a9d2ae86169d47179ae76"
+        },
+        "arm64": {
+            "url": "https://github.com/sandboxie-plus/Sandboxie/releases/download/v1.18.8/Sandboxie-Plus-ARM64-v1.18.8.exe",
+            "hash": "a1e33199ae715c32faa15aeec5e7d4c8401dcd1a4d348d6829d3e0978bd62b96"
+        }
+    },
+    "installer": {
+        "script": [
+            "Start-Process -FilePath \"$dir\\$fname\" -ArgumentList @('/verysilent', '/portable=1', '/currentuser', '/suppressmsgboxes', '/norestart', \"/dir=`\"$dir`\"\") -WindowStyle 'Hidden' -Wait | Out-Null",
+            "Remove-Item \"$dir\\$fname\" -Force -ErrorAction SilentlyContinue"
+        ]
+    },
+    "persist": [
+        "Sandboxie.ini",
+        "Sandboxie-Plus.ini",
+        "SbieSettings.ini",
+        "Templates.ini"
+    ],
+    "bin": [
+        [
+            "start.exe",
+            "sandboxie-start"
+        ]
+    ],
+    "shortcuts": [
+        [
+            "SandMan.exe",
+            "Sandboxie-Plus\\Sandboxie-Plus"
+        ]
+    ],
+    "uninstaller": {
+        "script": [
+            "Stop-Process -Name 'SandMan', 'SbieSvc', 'SbieCtrl' -Force -ErrorAction SilentlyContinue | Out-Null",
+            "if (Get-Service 'SbieSvc' -ErrorAction SilentlyContinue) { Start-Process -FilePath \"$dir\\KmdUtil.exe\" -ArgumentList 'uninstall', 'SbieSvc' -Wait -ErrorAction SilentlyContinue | Out-Null }",
+            "if (Get-Service 'SbieDrv' -ErrorAction SilentlyContinue) { Start-Process -FilePath \"$dir\\KmdUtil.exe\" -ArgumentList 'uninstall', 'SbieDrv' -Wait -ErrorAction SilentlyContinue | Out-Null }"
+        ]
+    },
+    "checkver": {
+        "github": "https://api.github.com/repos/sandboxie-plus/Sandboxie/releases/latest",
+        "jsonpath": "$.assets[?(@.name =~ /Plus/i)].browser_download_url",
+        "regex": "(?i)download/(?<tag>[^/]+)/Sandboxie-Plus-(?:x|ARM)64-v([\\d.]+)\\.exe"
+    },
+    "autoupdate": {
+        "architecture": {
+            "64bit": {
+                "url": "https://github.com/sandboxie-plus/Sandboxie/releases/download/$matchTag/Sandboxie-Plus-x64-v$version.exe"
+            },
+            "arm64": {
+                "url": "https://github.com/sandboxie-plus/Sandboxie/releases/download/$matchTag/Sandboxie-Plus-ARM64-v$version.exe"
+            }
+        },
+        "hash": {
+            "url": "$baseurl/sha256-checksums.txt"
+        }
+    }
+}
