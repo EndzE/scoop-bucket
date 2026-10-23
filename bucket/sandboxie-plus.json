@@ -10,7 +10,7 @@
         "Portable-mode install (/portable=1): unlike the official Nonportable bucket's sandboxie-plus-np, no driver/service is pre-registered and no admin rights are needed.",
         "On first SandMan.exe launch it will ask (elevated) to install/start the SbieDrv/SbieSvc driver - normal for portable mode.",
         "If sandboxes were used, uninstalling without admin may leave SbieSvc/SbieDrv behind; run KmdUtil uninstall with elevation in that case.",
-        "Sandboxie.ini and related settings are persisted across updates (the installer never overwrites existing ini files).",
+        "Sandboxie.ini (boxes and box settings, incl. DefaultBox) and the UI config (Sandboxie-Plus.ini) are persisted: UI settings live in PlusData\\ because SandMan atomically replaces its config file, which would break a plain file hardlink.",
         "For command-line usage, see: https://sandboxie-plus.com/sandboxie/startcommandline/. Please note that `sandboxie-start` should be used instead of the `start` command mentioned in the documentation."
     ],
     "architecture": {
@@ -29,9 +29,13 @@
             "Remove-Item \"$dir\\$fname\" -Force -ErrorAction SilentlyContinue"
         ]
     },
+    "post_install": [
+        "if (Test-Path \"$dir\\PlusData\\Sandboxie-Plus.ini\") { Remove-Item \"$dir\\Sandboxie-Plus.ini\" -Force -ErrorAction SilentlyContinue }",
+        "elseif (Test-Path \"$dir\\Sandboxie-Plus.ini\") { Move-Item \"$dir\\Sandboxie-Plus.ini\" \"$dir\\PlusData\\\" }"
+    ],
     "persist": [
+        "PlusData",
         "Sandboxie.ini",
-        "Sandboxie-Plus.ini",
         "SbieSettings.ini",
         "Templates.ini"
     ],
