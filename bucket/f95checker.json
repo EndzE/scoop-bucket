@@ -1,10 +1,10 @@
 {
-    "version": "11.1.3",
+    "version": "11.2",
     "description": "Check installed F95zone games for updates, with library management and launcher",
     "homepage": "https://github.com/WillyJL/F95Checker",
     "license": "GPL-3.0-or-later",
-    "url": "https://github.com/WillyJL/F95Checker/releases/download/11.1.3/F95Checker-Windows.zip",
-    "hash": "sha256:639fc81249e20ec01f0362e4e765b93dbbab56aaa1f9f8daba5e61dc08ae71e9",
+    "url": "https://github.com/WillyJL/F95Checker/releases/download/11.2/F95Checker-Windows.zip",
+    "hash": "sha256:71a8d3f48609341451ad2cd36b4359d6de237d142b045d9617195b917afdf349",
     "shortcuts": [
         [
             "F95Checker.exe",
