@@ -12,6 +12,8 @@ jobs:
   excavate:
     name: Excavate
     runs-on: windows-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v4
 
@@ -51,15 +53,19 @@ jobs:
             $owner = $Matches[1]; $repo = $Matches[2]
             $tag = [uri]::UnescapeDataString($Matches[3])
             $assetName = [uri]::UnescapeDataString($Matches[4])
-            $headers = @{ 'User-Agent' = 'scoop-bucket-excavator' }
-            $release = Invoke-RestMethod -Uri "https://api.github.com/repos/$owner/$repo/releases/tags/$tag" -Headers $headers
+            $apiHeaders = @{
+              'User-Agent'    = 'scoop-bucket-excavator'
+              'Accept'        = 'application/vnd.github+json'
+              'Authorization' = "Bearer $env:GITHUB_TOKEN"
+            }
+            $release = Invoke-RestMethod -Uri "https://api.github.com/repos/$owner/$repo/releases/tags/$tag" -Headers $apiHeaders
             $asset = $release.assets | Where-Object name -eq $assetName
             if (-not $asset) { Write-Warning "Asset $assetName not found in $tag"; continue }
             $hash = $asset.digest
             if (-not $hash -or -not $hash.StartsWith('sha256:')) {
               Write-Host "No digest in API, downloading $assetName ..."
               $tmp = New-TemporaryFile
-              Invoke-WebRequest -Uri $asset.browser_download_url -OutFile $tmp -Headers $headers
+              Invoke-WebRequest -Uri $asset.browser_download_url -OutFile $tmp -Headers @{ 'User-Agent' = 'scoop-bucket-excavator' }
               $hash = "sha256:$((Get-FileHash $tmp.FullName -Algorithm SHA256).Hash.ToLower())"
               Remove-Item $tmp.FullName
             }
